@@ -229,9 +229,9 @@ let chartData = {{ chart_data_json|safe }};
 const MONTHS_AZ = {1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'};
 
 const BUCKET_COLORS = {
-  '1-5':   {bar:'rgba(30,58,95,0.85)',  barB:'#2d5f8a', peak:'rgba(20,40,75,0.95)', peakB:'#7ab8d8', lbl:'#7ab8d8'},
-  '30-90': {bar:'rgba(30,58,95,0.85)',  barB:'#2d5f8a', peak:'rgba(20,40,75,0.95)', peakB:'#7ab8d8', lbl:'#7ab8d8'},
-  '90+':   {bar:'rgba(30,58,95,0.85)',  barB:'#2d5f8a', peak:'rgba(20,40,75,0.95)', peakB:'#7ab8d8', lbl:'#7ab8d8'},
+  '1-5':   {bar:'rgba(28,65,110,0.9)',  barB:'#3a7fc1', peak:'rgba(15,35,75,0.98)', peakB:'#93c5fd', lbl:'#93c5fd'},
+  '30-90': {bar:'rgba(28,65,110,0.9)',  barB:'#3a7fc1', peak:'rgba(15,35,75,0.98)', peakB:'#93c5fd', lbl:'#93c5fd'},
+  '90+':   {bar:'rgba(28,65,110,0.9)',  barB:'#3a7fc1', peak:'rgba(15,35,75,0.98)', peakB:'#93c5fd', lbl:'#93c5fd'},
 };
 
 // ── İL SEÇİMİ ────────────────────────────────────────────────────
@@ -338,18 +338,18 @@ function drawCombo(data) {
           borderWidth:1, borderRadius:6, borderSkipped:false, yAxisID:'yL', order:2,
           datalabels:{
             anchor:'end', align:'top',
-            color: ctx => ctx.raw===maxP ? colors.peakB : colors.lbl,
-            font:{size:9,weight:'700'},
-            formatter: v => v>0 ? Number(v.toFixed(0)).toLocaleString('en-US')+'K' : '', offset:2,
+            color: ctx => ctx.raw===maxP ? '#ffffff' : '#93c5fd',
+            font:{size:13,weight:'800'},
+            formatter: v => v>0 ? Number(v.toFixed(0)).toLocaleString('en-US')+'K' : '', offset:5,
           }
         },
         {
           type:'line', label:'Recovery PAR1-5', data:data.recovery,
           borderColor:'#10b981', backgroundColor:'transparent',
           pointBackgroundColor:'#10b981', pointBorderColor:'#070d14', pointBorderWidth:2,
-          pointRadius:4, pointHoverRadius:7, tension:0.38, yAxisID:'yR', order:1,
+          pointRadius:5, pointHoverRadius:8, tension:0.38, borderWidth:2.5, yAxisID:'yR', order:1,
           datalabels:{
-            anchor:'top', align:'top', color:'#34d399', font:{size:9,weight:'600'},
+            anchor:'top', align:'top', color:'#4ade80', font:{size:11,weight:'700'},
             formatter: v => v>0 ? v.toFixed(1)+'%' : '', offset:3,
           }
         },
@@ -357,25 +357,25 @@ function drawCombo(data) {
           type:'line', label:'Towards to NPL',
           data: currentBucket === '90+' ? data.towards_npl.map(() => null) : data.towards_npl,
           hidden: currentBucket === '90+',
-          borderColor:'#f97316', backgroundColor:'transparent',
-          pointBackgroundColor:'#f97316', pointBorderColor:'#070d14', pointBorderWidth:2,
+          borderColor:'#fb923c', backgroundColor:'transparent',
+          pointBackgroundColor:'#fb923c', pointBorderColor:'#070d14', pointBorderWidth:2,
           pointRadius:4, pointHoverRadius:7, tension:0.38, borderDash:[5,3],
           yAxisID:'yR', order:1,
           datalabels:{
-            anchor:'bottom', align:'bottom', color:'#fb923c', font:{size:9},
+            anchor:'bottom', align:'bottom', color:'#fdba74', font:{size:11,weight:'700'},
             formatter: v => v && v>0 ? v.toFixed(1)+'%' : '', offset:3,
           }
         },
         {
           type:'line', label:'NPL (Inflow)', data:data.inflow,
           borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.04)',
-          pointBackgroundColor: data.inflow.map(v => v>100 ? '#ef4444' : '#f87171'),
+          pointBackgroundColor: data.inflow.map(v => v>100 ? '#f87171' : '#7dd3fc'),
           pointBorderColor:'#070d14', pointBorderWidth:2,
           pointRadius: data.inflow.map(v => v>100 ? 7 : 4),
           pointHoverRadius:8, tension:0.38, borderWidth:2.5, yAxisID:'yR', order:0,
           datalabels:{
-            anchor:'top', align:'top', color:'#f87171',
-            font:{size: ctx => ctx.raw>100 ? 10 : 9, weight:'700'},
+            anchor:'top', align:'top', color:'#7dd3fc',
+            font:{size: ctx => ctx.raw>100 ? 12 : 11, weight:'800'},
             formatter: v => v>0 ? v.toFixed(1)+'%' : '',
             backgroundColor: ctx => ctx.raw>100 ? 'rgba(239,68,68,0.18)' : 'transparent',
             borderRadius:4, padding:3, offset:4,
@@ -402,13 +402,13 @@ function drawCombo(data) {
       },
       scales:{
         yL:{position:'left', grid:{color:'rgba(255,255,255,0.04)'},
-          ticks:{color:colors.lbl, font:{size:10}, callback:v=>Number(v).toLocaleString('en-US')+'K'},
+          ticks:{color:colors.lbl, font:{size:11}, callback:v=>Number(v).toLocaleString('en-US')+'K'},
           border:{color:'rgba(59,130,246,0.15)'}},
         yR:{position:'right', grid:{drawOnChartArea:false},
-          ticks:{color:'#8aabb8', font:{size:10}, callback:v=>v+'%'},
+          ticks:{color:'#a0bcd0', font:{size:11}, callback:v=>v+'%'},
           border:{color:'rgba(255,255,255,0.05)'}},
         x:{grid:{color:'rgba(255,255,255,0.03)'},
-          ticks:{color:'#8aabb8', font:{size:10}, maxRotation:35}}
+          ticks:{color:'#a0bcd0', font:{size:11}, maxRotation:35}}
       }
     }
   });
@@ -466,9 +466,9 @@ function drawRates(data) {
       },
       scales:{
         y:{grid:{color:'rgba(255,255,255,0.04)'},
-          ticks:{color:'#8aabb8', font:{size:10}, callback:v=>v+'%'}},
+          ticks:{color:'#a0bcd0', font:{size:11}, callback:v=>v+'%'}},
         x:{grid:{color:'rgba(255,255,255,0.03)'},
-          ticks:{color:'#8aabb8', font:{size:10}, maxRotation:35}}
+          ticks:{color:'#a0bcd0', font:{size:11}, maxRotation:35}}
       }
     }
   });
