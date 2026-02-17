@@ -77,8 +77,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .leg-btn.lb-rec.active{background:rgba(16,185,129,0.15);box-shadow:0 0 10px rgba(16,185,129,0.3);}
 .leg-btn.lb-npl{border-color:#f97316;color:#fb923c;}
 .leg-btn.lb-npl.active{background:rgba(249,115,22,0.15);box-shadow:0 0 10px rgba(249,115,22,0.3);}
-.leg-btn.lb-inf{border-color:#ef4444;color:#f87171;}
-.leg-btn.lb-inf.active{background:rgba(239,68,68,0.15);box-shadow:0 0 10px rgba(239,68,68,0.3);}
+.leg-btn.lb-inf{border-color:#38bdf8;color:#7dd3fc;}
+.leg-btn.lb-inf.active{background:rgba(56,189,248,0.15);box-shadow:0 0 10px rgba(56,189,248,0.3);}
 .leg-btn.off{opacity:0.25;box-shadow:none!important;}
 .leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 
@@ -203,7 +203,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
         <span class="leg-dot" style="background:#f97316"></span>Towards to NPL
       </button>
       <button class="leg-btn lb-inf active" onclick="toggleDS(3,this)">
-        <span class="leg-dot" style="background:#ef4444;box-shadow:0 0 5px #ef4444"></span>NPL (Inflow)
+        <span class="leg-dot" style="background:#38bdf8;box-shadow:0 0 5px #38bdf8"></span>NPL (Inflow)
       </button>
     </div>
     <div class="chart-wrap chart-main">
@@ -368,8 +368,8 @@ function drawCombo(data) {
         },
         {
           type:'line', label:'NPL (Inflow)', data:data.inflow,
-          borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.04)',
-          pointBackgroundColor: data.inflow.map(v => v>100 ? '#f87171' : '#7dd3fc'),
+          borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,0.04)',
+          pointBackgroundColor: data.inflow.map(v => v>100 ? '#ffffff' : '#38bdf8'),
           pointBorderColor:'#070d14', pointBorderWidth:2,
           pointRadius: data.inflow.map(v => v>100 ? 7 : 4),
           pointHoverRadius:8, tension:0.38, borderWidth:2.5, yAxisID:'yR', order:0,
@@ -377,7 +377,7 @@ function drawCombo(data) {
             anchor:'top', align:'top', color:'#7dd3fc',
             font:{size: ctx => ctx.raw>100 ? 12 : 11, weight:'800'},
             formatter: v => v>0 ? v.toFixed(1)+'%' : '',
-            backgroundColor: ctx => ctx.raw>100 ? 'rgba(239,68,68,0.18)' : 'transparent',
+            backgroundColor: ctx => ctx.raw>100 ? 'rgba(56,189,248,0.2)' : 'transparent',
             borderRadius:4, padding:3, offset:4,
           }
         }
