@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kredit Dashboard 2024–2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root {
+  --bg:#070d14; --card:#0d1823; --border:rgba(255,255,255,0.07);
+  --blue:#3b82f6; --green:#10b981; --cyan:#06b6d4;
+  --orange:#f97316; --red:#ef4444; --muted:#5a7a96; --text:#e2eaf4;
+}
+*{box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:radial-gradient(ellipse 80% 35% at 50% -5%,rgba(59,130,246,0.13) 0%,transparent 65%);}
+
+.dash-header{text-align:center;padding:24px 0 16px;}
+.badge-top{display:inline-block;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);
+  border-radius:20px;padding:4px 18px;font-size:0.7rem;font-weight:600;letter-spacing:2px;
+  text-transform:uppercase;color:#60a5fa;margin-bottom:10px;}
+.dash-header h1{font-size:1.8rem;font-weight:800;letter-spacing:2px;
+  background:linear-gradient(135deg,#fff 0%,#60a5fa 55%,#a78bfa 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;}
+.dash-header p{color:var(--muted);font-size:0.82rem;}
+
+.g-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 22px;}
+.filter-label{font-size:0.67rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px;display:block;}
+
+.form-select,.form-select:focus{background-color:#111e2c!important;color:var(--text)!important;
+  border-color:rgba(255,255,255,0.12)!important;box-shadow:none!important;font-size:0.84rem;}
+.form-select option{background:#111e2c;}
+
+/* TOGGLE BUTTONS */
+.tog-row{display:flex;gap:8px;flex-wrap:wrap;}
+.tog-btn{padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);
+  background:transparent;color:var(--muted);font-size:0.8rem;font-weight:500;cursor:pointer;transition:all .18s;}
+.tog-btn:hover{background:rgba(255,255,255,0.06);color:var(--text);}
+.tog-btn.active{background:rgba(59,130,246,0.18);border-color:rgba(59,130,246,0.45);color:#60a5fa;font-weight:600;}
+.tog-btn.b-3090.active{background:rgba(249,115,22,0.15);border-color:rgba(249,115,22,0.4);color:#fb923c;}
+.tog-btn.b-90p.active{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#f87171;}
+
+/* IL FILTER BUTTONS */
+.year-btn{padding:5px 14px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);
+  background:transparent;color:var(--muted);font-size:0.78rem;font-weight:500;cursor:pointer;transition:all .18s;}
+.year-btn:hover{background:rgba(255,255,255,0.06);color:var(--text);}
+.year-btn.active{background:rgba(139,92,246,0.18);border-color:rgba(139,92,246,0.45);color:#a78bfa;font-weight:600;}
+
+/* AY RANGE SLIDER AREA */
+.range-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.range-select{background:#111e2c!important;color:var(--text)!important;
+  border:1px solid rgba(255,255,255,0.12)!important;border-radius:10px;
+  padding:5px 10px;font-size:0.8rem;cursor:pointer;outline:none;}
+.range-select:focus{border-color:rgba(139,92,246,0.4)!important;}
+.range-select option{background:#111e2c;}
+.range-sep{color:var(--muted);font-size:0.8rem;font-weight:500;}
+
+/* DIVIDER */
+.filter-divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
+
+/* SECTION */
+.section-title{font-size:0.72rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);
+  display:flex;align-items:center;gap:7px;margin-bottom:14px;}
+.s-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+/* LEGEND BUTTONS */
+.leg-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.leg-btn{display:flex;align-items:center;gap:7px;padding:6px 16px;border-radius:20px;
+  border:2px solid;background:transparent;font-size:0.78rem;font-weight:600;
+  cursor:pointer;transition:all .2s;letter-spacing:0.3px;}
+.leg-btn.lb-port{border-color:#3b82f6;color:#60a5fa;}
+.leg-btn.lb-port.active{background:rgba(59,130,246,0.15);box-shadow:0 0 10px rgba(59,130,246,0.3);}
+.leg-btn.lb-rec{border-color:#10b981;color:#34d399;}
+.leg-btn.lb-rec.active{background:rgba(16,185,129,0.15);box-shadow:0 0 10px rgba(16,185,129,0.3);}
+.leg-btn.lb-npl{border-color:#f97316;color:#fb923c;}
+.leg-btn.lb-npl.active{background:rgba(249,115,22,0.15);box-shadow:0 0 10px rgba(249,115,22,0.3);}
+.leg-btn.lb-inf{border-color:#ef4444;color:#f87171;}
+.leg-btn.lb-inf.active{background:rgba(239,68,68,0.15);box-shadow:0 0 10px rgba(239,68,68,0.3);}
+.leg-btn.off{opacity:0.25;box-shadow:none!important;}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+.chart-main{height:380px;}
+.chart-sm{height:240px;}
+.chart-wrap{position:relative;}
+
+.spinner-wrap{display:none;position:absolute;inset:0;background:rgba(7,13,20,.7);
+  align-items:center;justify-content:center;border-radius:16px;z-index:10;}
+.spinner-wrap.show{display:flex;}
+.spinner{width:34px;height:34px;border:3px solid rgba(59,130,246,.2);border-top-color:#3b82f6;
+  border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* DATE RANGE TAG */
+.date-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;
+  background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);
+  font-size:0.72rem;font-weight:600;color:#a78bfa;}
+</style>
+</head>
+<body>
+
+<div class="dash-header">
+  <div class="badge-top">PAR Portfolio Analysis</div>
+  <h1>CREDIT DASHBOARD 2024–2026</h1>
+  <p>PSD · Micro · KOS — Portfolio Trend, Recovery and Inflow</p>
+</div>
+
+<div class="container-fluid px-4 pb-5">
+
+  <!-- FILTER CARD -->
+  <div class="g-card mb-4">
+
+    <!-- Row 1: Sheet · Bucket · Product -->
+    <div class="row g-3 align-items-end mb-2">
+      <div class="col-md-3">
+        <span class="filter-label">Portfolio Type</span>
+        <div class="tog-row" id="sheetBtns">
+          {% for s in sheets %}
+          <button class="tog-btn {% if s == selected_sheet %}active{% endif %}"
+                  onclick="selectSheet('{{ s }}', this)">{{ s }}</button>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-3">
+        <span class="filter-label">PAR Bucket</span>
+        <div class="tog-row" id="bucketBtns">
+          <button class="tog-btn {% if selected_bucket == '1-5' %}active{% endif %}"
+                  onclick="selectBucket('1-5', this)">1-5</button>
+          <button class="tog-btn b-3090 {% if selected_bucket == '30-90' %}active{% endif %}"
+                  onclick="selectBucket('30-90', this)">30-90</button>
+          <button class="tog-btn b-90p {% if selected_bucket == '90+' %}active{% endif %}"
+                  onclick="selectBucket('90+', this)">90+</button>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <span class="filter-label">Product</span>
+        <select id="mehsulSelect" class="form-select" onchange="loadChart()">
+          {% for m in mehsullar %}
+          <option value="{{ m }}" {% if m == selected_mehsul %}selected{% endif %}>{{ m }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <hr class="filter-divider">
+
+    <!-- Row 2: Year · Month Range -->
+    <div class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <span class="filter-label">📅 Year</span>
+        <div class="tog-row" id="yearBtns">
+          {% for y in all_years %}
+          <button class="year-btn {% if y == year_from and y == year_to %}active{% endif %}"
+                  onclick="selectYear({{ y }}, this)">{{ y }}</button>
+          {% endfor %}
+          <button class="year-btn {% if year_from == all_years.0 and year_to == all_years|last %}active{% endif %}"
+                  onclick="selectAllYears(this)">All</button>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <span class="filter-label">📆 Month Range</span>
+        <div class="range-wrap">
+          <select id="monthFrom" class="range-select" onchange="loadChart()">
+            {% for num, name in months_az.items %}
+            <option value="{{ num }}" {% if num == month_from %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+          </select>
+          <span class="range-sep">→</span>
+          <select id="monthTo" class="range-select" onchange="loadChart()">
+            {% for num, name in months_az.items %}
+            <option value="{{ num }}" {% if num == month_to %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <span class="filter-label">Selected Range</span>
+        <div class="date-tag" id="dateTag">
+          {{ year_from }}/{{ month_from }} → {{ year_to }}/{{ month_to }}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- COMBO CHART -->
+  <div class="g-card mb-4" style="position:relative;">
+    <div class="spinner-wrap" id="spinner1"><div class="spinner"></div></div>
+    <div class="section-title">
+      <span class="s-dot" style="background:#3b82f6;box-shadow:0 0 6px #3b82f6"></span>
+      Portfolio Volume and NPL Ratios
+    </div>
+    <div class="leg-row">
+      <button class="leg-btn lb-port active" onclick="toggleDS(0,this)">
+        <span class="leg-dot" style="background:#3b82f6;box-shadow:0 0 5px #3b82f6"></span>Portfolio 1-5
+      </button>
+      <button class="leg-btn lb-rec active" onclick="toggleDS(1,this)">
+        <span class="leg-dot" style="background:#10b981;box-shadow:0 0 5px #10b981"></span>Recovery PAR1-5
+      </button>
+      <button class="leg-btn lb-npl active" onclick="toggleDS(2,this)">
+        <span class="leg-dot" style="background:#f97316"></span>Towards to NPL
+      </button>
+      <button class="leg-btn lb-inf active" onclick="toggleDS(3,this)">
+        <span class="leg-dot" style="background:#ef4444;box-shadow:0 0 5px #ef4444"></span>NPL (Inflow)
+      </button>
+    </div>
+    <div class="chart-wrap chart-main">
+      <canvas id="comboChart"></canvas>
+    </div>
+  </div>
+
+
+
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
+
+let currentSheet  = '{{ selected_sheet }}';
+let currentBucket = '{{ selected_bucket }}';
+let currentMehsul = '{{ selected_mehsul }}';
+let yearFrom      = {{ year_from }};
+let yearTo        = {{ year_to }};
+let comboChart;
+let chartData = {{ chart_data_json|safe }};
+
+const MONTHS_AZ = {1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'};
+
+const BUCKET_COLORS = {
+  '1-5':   {bar:'rgba(30,58,95,0.85)',  barB:'#2d5f8a', peak:'rgba(20,40,75,0.95)', peakB:'#7ab8d8', lbl:'#7ab8d8'},
+  '30-90': {bar:'rgba(30,58,95,0.85)',  barB:'#2d5f8a', peak:'rgba(20,40,75,0.95)', peakB:'#7ab8d8', lbl:'#7ab8d8'},
+  '90+':   {bar:'rgba(30,58,95,0.85)',  barB:'#2d5f8a', peak:'rgba(20,40,75,0.95)', peakB:'#7ab8d8', lbl:'#7ab8d8'},
+};
+
+// ── İL SEÇİMİ ────────────────────────────────────────────────────
+function selectYear(year, btn) {
+  yearFrom = year;
+  yearTo   = year;
+  document.querySelectorAll('#yearBtns .year-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateDateTag();
+  loadChart();
+}
+
+function selectAllYears(btn) {
+  const allYears = {{ all_years|safe }};
+  yearFrom = allYears[0];
+  yearTo   = allYears[allYears.length - 1];
+  document.querySelectorAll('#yearBtns .year-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateDateTag();
+  loadChart();
+}
+
+// ── SHEET / BUCKET ────────────────────────────────────────────────
+function selectSheet(sheet, btn) {
+  currentSheet = sheet;
+  document.querySelectorAll('#sheetBtns .tog-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showSpinner(true);
+  fetch(`/api/mehsullar/?sheet=${sheet}`)
+    .then(r => r.json())
+    .then(j => {
+      const sel = document.getElementById('mehsulSelect');
+      sel.innerHTML = '';
+      j.mehsullar.forEach(m => {
+        const o = document.createElement('option');
+        o.value = m; o.textContent = m;
+        sel.appendChild(o);
+      });
+      currentMehsul = j.mehsullar[0] || '';
+      loadChart();
+    });
+}
+
+function selectBucket(bucket, btn) {
+  currentBucket = bucket;
+  document.querySelectorAll('#bucketBtns .tog-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelector('.leg-btn.lb-port').childNodes[2].textContent = ` Portfolio ${bucket}`;
+  // 90+ üçün "Towards to NPL" legend düyməsini gizlət
+  const nplBtn = document.querySelector('.leg-btn.lb-npl');
+  nplBtn.style.display = bucket === '90+' ? 'none' : 'flex';
+  loadChart();
+}
+
+// ── DATE TAG ─────────────────────────────────────────────────────
+function updateDateTag() {
+  const mf = parseInt(document.getElementById('monthFrom').value);
+  const mt = parseInt(document.getElementById('monthTo').value);
+  document.getElementById('dateTag').textContent =
+    `${MONTHS_AZ[mf]} ${yearFrom} → ${MONTHS_AZ[mt]} ${yearTo}`;
+}
+
+// ── DATA YÜKLƏ ────────────────────────────────────────────────────
+function loadChart() {
+  currentMehsul = document.getElementById('mehsulSelect').value;
+  const mf = document.getElementById('monthFrom').value;
+  const mt = document.getElementById('monthTo').value;
+  updateDateTag();
+  showSpinner(true);
+
+  const params = new URLSearchParams({
+    sheet: currentSheet, mehsul: currentMehsul, bucket: currentBucket,
+    year_from: yearFrom, year_to: yearTo, month_from: mf, month_to: mt
+  });
+
+  fetch(`/api/data/?${params}`)
+    .then(r => r.json())
+    .then(data => {
+      chartData = data;
+      drawCombo(data);
+      showSpinner(false);
+    });
+}
+
+function showSpinner(v) {
+  document.getElementById('spinner1').classList.toggle('show', v);
+}
+
+// ── COMBO CHART ───────────────────────────────────────────────────
+function drawCombo(data) {
+  if (comboChart) comboChart.destroy();
+  const ctx    = document.getElementById('comboChart').getContext('2d');
+  const maxP   = Math.max(...data.portfolio);
+  const colors = BUCKET_COLORS[currentBucket];
+
+  comboChart = new Chart(ctx, {
+    data: {
+      labels: data.aylar,
+      datasets: [
+        {
+          type:'bar', label:`Portfolio ${currentBucket}`, data:data.portfolio,
+          backgroundColor: data.portfolio.map(v => v===maxP ? colors.peak : colors.bar),
+          borderColor:     data.portfolio.map(v => v===maxP ? colors.peakB : colors.barB),
+          borderWidth:1, borderRadius:6, borderSkipped:false, yAxisID:'yL', order:2,
+          datalabels:{
+            anchor:'end', align:'top',
+            color: ctx => ctx.raw===maxP ? colors.peakB : colors.lbl,
+            font:{size:9,weight:'700'},
+            formatter: v => v>0 ? Number(v.toFixed(0)).toLocaleString('en-US')+'K' : '', offset:2,
+          }
+        },
+        {
+          type:'line', label:'Recovery PAR1-5', data:data.recovery,
+          borderColor:'#10b981', backgroundColor:'transparent',
+          pointBackgroundColor:'#10b981', pointBorderColor:'#070d14', pointBorderWidth:2,
+          pointRadius:4, pointHoverRadius:7, tension:0.38, yAxisID:'yR', order:1,
+          datalabels:{
+            anchor:'top', align:'top', color:'#34d399', font:{size:9,weight:'600'},
+            formatter: v => v>0 ? v.toFixed(1)+'%' : '', offset:3,
+          }
+        },
+        {
+          type:'line', label:'Towards to NPL',
+          data: currentBucket === '90+' ? data.towards_npl.map(() => null) : data.towards_npl,
+          hidden: currentBucket === '90+',
+          borderColor:'#f97316', backgroundColor:'transparent',
+          pointBackgroundColor:'#f97316', pointBorderColor:'#070d14', pointBorderWidth:2,
+          pointRadius:4, pointHoverRadius:7, tension:0.38, borderDash:[5,3],
+          yAxisID:'yR', order:1,
+          datalabels:{
+            anchor:'bottom', align:'bottom', color:'#fb923c', font:{size:9},
+            formatter: v => v && v>0 ? v.toFixed(1)+'%' : '', offset:3,
+          }
+        },
+        {
+          type:'line', label:'NPL (Inflow)', data:data.inflow,
+          borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.04)',
+          pointBackgroundColor: data.inflow.map(v => v>100 ? '#ef4444' : '#f87171'),
+          pointBorderColor:'#070d14', pointBorderWidth:2,
+          pointRadius: data.inflow.map(v => v>100 ? 7 : 4),
+          pointHoverRadius:8, tension:0.38, borderWidth:2.5, yAxisID:'yR', order:0,
+          datalabels:{
+            anchor:'top', align:'top', color:'#f87171',
+            font:{size: ctx => ctx.raw>100 ? 10 : 9, weight:'700'},
+            formatter: v => v>0 ? v.toFixed(1)+'%' : '',
+            backgroundColor: ctx => ctx.raw>100 ? 'rgba(239,68,68,0.18)' : 'transparent',
+            borderRadius:4, padding:3, offset:4,
+          }
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:28}},
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:false}, datalabels:{},
+        tooltip:{
+          backgroundColor:'#0d1823', borderColor:'rgba(255,255,255,0.08)', borderWidth:1,
+          titleColor:'#e2eaf4', bodyColor:'#8aabb8', padding:13, cornerRadius:10,
+          callbacks:{
+            title: i => `📅 ${data.aylar[i[0].dataIndex]}  ·  PAR ${currentBucket}`,
+            label: ctx => ctx.datasetIndex===0
+              ? `  📊 ${ctx.dataset.label}: ${Number(ctx.raw.toFixed(0)).toLocaleString('en-US')}K`
+              : `  ${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`
+          }
+        }
+      },
+      scales:{
+        yL:{position:'left', grid:{color:'rgba(255,255,255,0.04)'},
+          ticks:{color:colors.lbl, font:{size:10}, callback:v=>Number(v).toLocaleString('en-US')+'K'},
+          border:{color:'rgba(59,130,246,0.15)'}},
+        yR:{position:'right', grid:{drawOnChartArea:false},
+          ticks:{color:'#8aabb8', font:{size:10}, callback:v=>v+'%'},
+          border:{color:'rgba(255,255,255,0.05)'}},
+        x:{grid:{color:'rgba(255,255,255,0.03)'},
+          ticks:{color:'#8aabb8', font:{size:10}, maxRotation:35}}
+      }
+    }
+  });
+}
+
+// ── RATE CHART ────────────────────────────────────────────────────
+function drawRates(data) {
+  if (rChart) rChart.destroy();
+  const ctx = document.getElementById('rateChart').getContext('2d');
+
+  rChart = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels:data.aylar,
+      datasets:[
+        {
+          label:'Recovery of PAR', data:data.recovery,
+          borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.07)',
+          pointBackgroundColor:'#10b981', pointBorderColor:'#070d14', pointBorderWidth:2,
+          pointRadius:4, pointHoverRadius:7, tension:0.38, fill:true,
+          datalabels:{anchor:'top', align:'top', color:'#34d399', font:{size:9,weight:'600'},
+            formatter:v=>v>0?v.toFixed(1)+'%':'', offset:3}
+        },
+        {
+          label:'Inflow', data:data.inflow,
+          borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.05)',
+          pointBackgroundColor: data.inflow.map(v=>v>100?'#ef4444':'#f87171'),
+          pointBorderColor:'#070d14', pointBorderWidth:2,
+          pointRadius: data.inflow.map(v=>v>100?7:4),
+          pointHoverRadius:8, tension:0.38, fill:false, borderWidth:2.5,
+          datalabels:{
+            anchor:'top', align:'top', color:'#f87171',
+            font:{size:ctx=>ctx.raw>100?10:9, weight:'700'},
+            formatter:v=>v>0?v.toFixed(1)+'%':'',
+            backgroundColor:ctx=>ctx.raw>100?'rgba(239,68,68,0.18)':'transparent',
+            borderRadius:4, padding:3, offset:4,
+          }
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:25}},
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:false}, datalabels:{},
+        tooltip:{
+          backgroundColor:'#0d1823', borderColor:'rgba(255,255,255,0.08)', borderWidth:1,
+          titleColor:'#e2eaf4', bodyColor:'#8aabb8', padding:12, cornerRadius:10,
+          callbacks:{
+            title:i=>`📅 ${data.aylar[i[0].dataIndex]}`,
+            label:c=>`  ${c.dataset.label}: ${c.raw.toFixed(1)}%`
+          }
+        }
+      },
+      scales:{
+        y:{grid:{color:'rgba(255,255,255,0.04)'},
+          ticks:{color:'#8aabb8', font:{size:10}, callback:v=>v+'%'}},
+        x:{grid:{color:'rgba(255,255,255,0.03)'},
+          ticks:{color:'#8aabb8', font:{size:10}, maxRotation:35}}
+      }
+    }
+  });
+}
+
+// ── TOGGLE ────────────────────────────────────────────────────────
+function toggleDS(idx, btn) {
+  if (!comboChart) return;
+  comboChart.data.datasets[idx].hidden = !comboChart.data.datasets[idx].hidden;
+  btn.classList.toggle('off');
+  comboChart.update();
+}
+function toggleLine(idx, btn) {
+  if (!rChart) return;
+  rChart.data.datasets[idx].hidden = !rChart.data.datasets[idx].hidden;
+  btn.classList.toggle('off');
+  rChart.update();
+}
+
+// Initial render
+drawCombo(chartData);
+updateDateTag();
+// 90+ ilə başlanırsa NPL legend gizlət
+if (currentBucket === '90+') {
+  document.querySelector('.leg-btn.lb-npl').style.display = 'none';
+}
+</script>
+</body>
+</html>
