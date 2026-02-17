@@ -280,6 +280,7 @@ function selectBucket(bucket, btn) {
   document.querySelectorAll('#bucketBtns .tog-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelector('.leg-btn.lb-port').childNodes[2].textContent = ` Portfolio ${bucket}`;
+  document.querySelector('.leg-btn.lb-rec').childNodes[2].textContent = ` Recovery PAR ${bucket}`;
   // 90+ üçün "Towards to NPL" legend düyməsini gizlət
   const nplBtn = document.querySelector('.leg-btn.lb-npl');
   nplBtn.style.display = bucket === '90+' ? 'none' : 'flex';
@@ -344,7 +345,7 @@ function drawCombo(data) {
           }
         },
         {
-          type:'line', label:'Recovery PAR1-5', data:data.recovery,
+          type:'line', label:`Recovery PAR ${currentBucket}`, data:data.recovery,
           borderColor:'#10b981', backgroundColor:'transparent',
           pointBackgroundColor:'#10b981', pointBorderColor:'#070d14', pointBorderWidth:2,
           pointRadius:5, pointHoverRadius:8, tension:0.38, borderWidth:2.5, yAxisID:'yR', order:1,
@@ -491,6 +492,8 @@ function toggleLine(idx, btn) {
 // Initial render
 drawCombo(chartData);
 updateDateTag();
+// İlk yükləmədə labelları düzgün qur
+document.querySelector('.leg-btn.lb-rec').childNodes[2].textContent = ` Recovery PAR ${currentBucket}`;
 // 90+ ilə başlanırsa NPL legend gizlət
 if (currentBucket === '90+') {
   document.querySelector('.leg-btn.lb-npl').style.display = 'none';
