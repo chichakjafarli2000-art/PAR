@@ -1,3 +1,4 @@
+
 import pandas as pd
 import json
 from django.shortcuts import render
@@ -67,6 +68,28 @@ def load_all_data():
         df = pd.read_excel(settings.EXCEL_PATH, sheet_name=sheet_name, header=None)
         row0 = df.iloc[0].tolist()
         row1 = df.iloc[1].tolist()
+
+        # TOTAL faylındakı Dec23 sütunundan 31-90 (col1) və 90+ (col3) prev_current al
+        # Bu məlumatlar load_dec23-ə əlavə olunur
+        skip = {'Current', 'Inflow', 'Outflow', '30-90 to 90+', 'nan', ''}
+        for idx in range(2, len(df)):
+            lbl = str(df.iloc[idx, 0]).strip()
+            if lbl and lbl not in skip and lbl != 'nan':
+                try:
+                    c3190 = safe_float(df.iloc[idx + 1, 2])  # Dec23 31-90 current (amount)
+                    c90p  = safe_float(df.iloc[idx + 1, 4])  # Dec23 90+ current (amount)
+                    if lbl not in dec23.get(sheet_name, {}):
+                        dec23.setdefault(sheet_name, {})[lbl] = {
+                            '1-5':   {'current': 0.0, 'to90': 0.0},
+                            '6-30':  {'current': 0.0, 'to90': 0.0},
+                            '31-90': {'current': c3190, 'to90': 0.0},
+                            '90+':   {'current': c90p,  'to90': 0.0},
+                        }
+                    else:
+                        dec23[sheet_name][lbl]['31-90'] = {'current': c3190, 'to90': 0.0}
+                        dec23[sheet_name][lbl]['90+']   = {'current': c90p,  'to90': 0.0}
+                except:
+                    pass
 
         ay_list = []
         for i in range(len(row1)):
