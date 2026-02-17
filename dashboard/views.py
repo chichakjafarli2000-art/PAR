@@ -7,14 +7,14 @@ from functools import lru_cache
 from django.contrib.auth.decorators import login_required
 
 SHEETS  = ['PSD', 'Mikro', 'KOS']
-BUCKETS = ['1-5', '30-90', '90+']
-BUCKET_OFFSET = {'1-5': 0, '30-90': 6, '90+': 8}
+BUCKETS = ['1-5', '6-30', '31-90', '90+']
+BUCKET_OFFSET = {'1-5': 0, '6-30': 2, '31-90': 6, '90+': 8}
 
 # Dekabr 23 faylındakı sheet adları
 DEC23_SHEET_MAP = {'PSD': 'PSD', 'Mikro': 'MIKRO', 'KOS': 'Kos'}
 
 # Dekabr 23 faylında bucket sütunları (amount col)
-DEC23_BUCKET_COL = {'1-5': 2, '30-90': None, '90+': None}
+DEC23_BUCKET_COL = {'1-5': 2, '31-90': None, '90+': None}
 # Dekabr 23-də yalnız 1-5 üçün prev_current var
 
 
@@ -44,10 +44,13 @@ def load_dec23():
                 try:
                     current_15 = safe_float(df.iloc[idx + 1, 2])  # 1-5 amount
                     to90_15    = safe_float(df.iloc[idx + 4, 2])   # 30-90to90+ for 1-5
+                    current_630 = safe_float(df.iloc[idx + 1, 4]) # 6-30 amount
+                    to90_630    = safe_float(df.iloc[idx + 4, 4]) # 30-90to90+ for 6-30
                     result[sheet_name][lbl] = {
-                        '1-5':   {'current': current_15, 'to90': to90_15},
-                        '30-90': {'current': 0.0,        'to90': 0.0},
-                        '90+':   {'current': 0.0,        'to90': 0.0},
+                        '1-5':   {'current': current_15,  'to90': to90_15},
+                        '6-30':  {'current': current_630, 'to90': to90_630},
+                        '31-90': {'current': 0.0,         'to90': 0.0},
+                        '90+':   {'current': 0.0,         'to90': 0.0},
                     }
                 except:
                     pass
