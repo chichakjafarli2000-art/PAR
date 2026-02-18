@@ -253,6 +253,13 @@ function selectBucket(bucket, btn) {
   document.querySelector('.leg-btn.lb-rec span:last-child').textContent  = `Recovery PAR ${bucket}`;
   const nplBtn = document.querySelector('.leg-btn.lb-npl');
   nplBtn.style.display = bucket === '90+' ? 'none' : 'flex';
+  
+  // Legend düymələrini hamısını aktiv et
+  document.querySelectorAll('.leg-btn').forEach(b => {
+    b.classList.add('active');
+    b.classList.remove('off');
+  });
+  
   loadChart();
 }
 
@@ -306,6 +313,15 @@ function drawCombo(data) {
   const ctx    = document.getElementById('comboChart').getContext('2d');
   const maxP   = Math.max(...data.portfolio);
   const colors = BUCKET_COLORS[currentBucket];
+  
+  // Chart yenilənəndə legend düymələrini aktiv vəziyyətə gətir
+  setTimeout(() => {
+    document.querySelectorAll('.leg-btn').forEach(b => {
+      if (!b.classList.contains('off')) {
+        b.classList.add('active');
+      }
+    });
+  }, 50);
   const n      = data.portfolio.length;
 
 
