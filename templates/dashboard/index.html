@@ -422,7 +422,7 @@ function drawCombo(data) {
           callbacks:{
             title: i => `📅 ${data.aylar[i[0].dataIndex]}  ·  PAR ${currentBucket}`,
             label: ctx => ctx.datasetIndex===0
-              ? (() => { const v = ctx.raw; const s = v>=1000 ? (v/1000).toFixed(1).replace(/\.0$/,'')+'M' : Number(v.toFixed(0)).toLocaleString('en-US')+'K'; return `  📊 ${ctx.dataset.label}: ${s}`; })()
+              ? `  📊 ${ctx.dataset.label}: ${Number(ctx.raw.toFixed(0)).toLocaleString('en-US')}K`
               : `  ${ctx.dataset.label}: ${ctx.raw != null ? ctx.raw.toFixed(1) : '-'}%`
           }
         }
