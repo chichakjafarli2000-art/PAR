@@ -235,12 +235,28 @@ function selectSheet(sheet, btn) {
     .then(j => {
       const sel = document.getElementById('mehsulSelect');
       sel.innerHTML = '';
+      
+      // İlk olaraq "ALL" əlavə et
+      const allOption = document.createElement('option');
+      allOption.value = 'ALL';
+      allOption.textContent = 'ALL';
+      sel.appendChild(allOption);
+      
+      // Digər məhsulları əlavə et
       j.mehsullar.forEach(m => {
         const o = document.createElement('option');
         o.value = m; o.textContent = m;
         sel.appendChild(o);
       });
-      currentMehsul = j.mehsullar[0] || '';
+      
+      currentMehsul = 'ALL';
+      
+      // Legend düymələrini hamısını aktiv et
+      document.querySelectorAll('.leg-btn').forEach(b => {
+        b.classList.add('active');
+        b.classList.remove('off');
+      });
+      
       loadChart();
     });
 }

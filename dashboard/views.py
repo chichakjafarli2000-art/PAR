@@ -1,4 +1,3 @@
-
 import pandas as pd
 import json
 from django.shortcuts import render
@@ -169,16 +168,64 @@ def _filter_monthly(monthly, year_from, year_to, month_from, month_to):
 
 
 def _chart_data(sheet, mehsul, bucket, year_from, year_to, month_from, month_to):
-    data     = load_all_data()
-    monthly  = data.get(sheet, {}).get('mehsullar', {}).get(mehsul, {}).get(bucket, [])
-    filtered = _filter_monthly(monthly, year_from, year_to, month_from, month_to)
-    return {
-        'aylar':       [d['ay']          for d in filtered],
-        'portfolio':   [d['portfolio']   for d in filtered],
-        'recovery':    [d['recovery']    for d in filtered],
-        'towards_npl': [d['towards_npl'] for d in filtered],
-        'inflow':      [d['inflow']      for d in filtered],
-    }
+    data = load_all_data()
+    
+    if mehsul == 'ALL':
+        # Bütün məhsulların cəmini hesabla
+        all_mehsullar = data.get(sheet, {}).get('mehsullar', {})
+        if not all_mehsullar:
+            return {'aylar': [], 'portfolio': [], 'recovery': [], 'towards_npl': [], 'inflow': []}
+        
+        # İlk məhsuldan ay siyahısını al
+        first_mehsul = list(all_mehsullar.keys())[0]
+        monthly_template = all_mehsullar[first_mehsul].get(bucket, [])
+        filtered_template = _filter_monthly(monthly_template, year_from, year_to, month_from, month_to)
+        
+        # Hər ay üçün bütün məhsulları topla
+        result = []
+        for i, ay_data in enumerate(filtered_template):
+            total_portfolio = 0
+            total_recovery = 0
+            total_towards_npl = 0
+            total_inflow = 0
+            count = 0
+            
+            for m_name, m_data in all_mehsullar.items():
+                m_bucket = m_data.get(bucket, [])
+                m_filtered = _filter_monthly(m_bucket, year_from, year_to, month_from, month_to)
+                if i < len(m_filtered):
+                    total_portfolio += m_filtered[i]['portfolio']
+                    total_recovery += m_filtered[i]['recovery']
+                    total_towards_npl += m_filtered[i]['towards_npl']
+                    total_inflow += m_filtered[i]['inflow']
+                    count += 1
+            
+            result.append({
+                'ay': ay_data['ay'],
+                'portfolio': total_portfolio,
+                'recovery': total_recovery / count if count > 0 else 0,
+                'towards_npl': total_towards_npl / count if count > 0 else 0,
+                'inflow': total_inflow / count if count > 0 else 0,
+            })
+        
+        return {
+            'aylar':       [d['ay']          for d in result],
+            'portfolio':   [d['portfolio']   for d in result],
+            'recovery':    [d['recovery']    for d in result],
+            'towards_npl': [d['towards_npl'] for d in result],
+            'inflow':      [d['inflow']      for d in result],
+        }
+    else:
+        # Konkret məhsul
+        monthly  = data.get(sheet, {}).get('mehsullar', {}).get(mehsul, {}).get(bucket, [])
+        filtered = _filter_monthly(monthly, year_from, year_to, month_from, month_to)
+        return {
+            'aylar':       [d['ay']          for d in filtered],
+            'portfolio':   [d['portfolio']   for d in filtered],
+            'recovery':    [d['recovery']    for d in filtered],
+            'towards_npl': [d['towards_npl'] for d in filtered],
+            'inflow':      [d['inflow']      for d in filtered],
+        }
 
 
 @login_required
@@ -190,10 +237,10 @@ def index(request):
     if selected_sheet  not in SHEETS:  selected_sheet  = 'PSD'
     if selected_bucket not in BUCKETS: selected_bucket = '1-5'
 
-    mehsullar       = list(data[selected_sheet]['mehsullar'].keys())
-    selected_mehsul = request.GET.get('mehsul', mehsullar[0] if mehsullar else '')
+    mehsullar       = ['ALL'] + list(data[selected_sheet]['mehsullar'].keys())
+    selected_mehsul = request.GET.get('mehsul', 'ALL')
     if selected_mehsul not in mehsullar:
-        selected_mehsul = mehsullar[0] if mehsullar else ''
+        selected_mehsul = 'ALL'
 
     all_years  = data[selected_sheet]['years']
     year_from  = int(request.GET.get('year_from',  all_years[0]))
