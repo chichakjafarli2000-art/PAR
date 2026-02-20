@@ -104,13 +104,15 @@ def load_all_data():
 
         skip = {'Current', 'Inflow', 'Outflow', '30-90 to 90+', 'nan', ''}
         mehsullar = {}
+        mehsul_rows = {}
         for idx in range(2, len(df)):
             lbl = str(df.iloc[idx, 0]).strip()
             if lbl and lbl not in skip and lbl != 'nan':
                 mehsullar[lbl] = idx
+                mehsul_rows[lbl] = idx
 
         years = sorted(set(a['year'] for a in ay_list))
-        sheet_data = {'ay_list': ay_list, 'years': years, 'mehsullar': {}}
+        sheet_data = {'ay_list': ay_list, 'years': years, 'mehsullar': {}, 'mehsul_rows': mehsul_rows}
 
         for mehsul, m_row in mehsullar.items():
             bucket_data = {}
@@ -176,37 +178,71 @@ def _chart_data(sheet, mehsul, bucket, year_from, year_to, month_from, month_to)
         if not all_mehsullar:
             return {'aylar': [], 'portfolio': [], 'recovery': [], 'towards_npl': [], 'inflow': []}
         
+        # Hər məhsul üçün raw data topla (current, outflow, inflow, to90+)
+        # Sonra ümumi current-dən faizləri hesabla
+        
         # İlk məhsuldan ay siyahısını al
         first_mehsul = list(all_mehsullar.keys())[0]
-        monthly_template = all_mehsullar[first_mehsul].get(bucket, [])
-        filtered_template = _filter_monthly(monthly_template, year_from, year_to, month_from, month_to)
+        first_bucket_data = all_mehsullar[first_mehsul].get(bucket, [])
+        filtered_first = _filter_monthly(first_bucket_data, year_from, year_to, month_from, month_to)
         
-        # Hər ay üçün bütün məhsulları topla
+        # Excel-dən raw məlumatları topla
+        raw_df = pd.read_excel(settings.EXCEL_PATH, sheet_name=sheet, header=None)
+        offset = BUCKET_OFFSET[bucket]
+        skip_lbls = {'Current', 'Inflow', 'Outflow', '30-90 to 90+', 'nan', ''}
+        
+        # Dec23 bazasını yüklə
+        dec23_data = load_dec23()
+        dec23_current = 0
+        for m_name in all_mehsullar.keys():
+            m_dec = dec23_data.get(sheet, {}).get(m_name, {}).get(bucket, {})
+            dec23_current += m_dec.get('current', 0)
+        
         result = []
-        for i, ay_data in enumerate(filtered_template):
-            total_portfolio = 0
-            total_recovery = 0
-            total_towards_npl = 0
-            total_inflow = 0
-            count = 0
+        prev_total_current = dec23_current  # Əvvəlki ayın cəmi current (Dec23-dən başla)
+        
+        for month_idx, ay_info in enumerate(data[sheet]['ay_list']):
+            # Yalnız seçilmiş aralıqda olan ayları götür
+            y, m = ay_info['year'], ay_info['month']
+            after_start = (y > year_from) or (y == year_from and m >= month_from)
+            before_end = (y < year_to) or (y == year_to and m <= month_to)
+            if not (after_start and before_end):
+                continue
             
-            for m_name, m_data in all_mehsullar.items():
-                m_bucket = m_data.get(bucket, [])
-                m_filtered = _filter_monthly(m_bucket, year_from, year_to, month_from, month_to)
-                if i < len(m_filtered):
-                    total_portfolio += m_filtered[i]['portfolio']
-                    total_recovery += m_filtered[i]['recovery']
-                    total_towards_npl += m_filtered[i]['towards_npl']
-                    total_inflow += m_filtered[i]['inflow']
-                    count += 1
+            base_col = ay_info['base_col']
+            ac = base_col + offset
+            
+            # Bütün məhsullar üçün cəm
+            total_current = 0
+            total_outflow = 0
+            total_inflow = 0
+            total_to90 = 0
+            
+            for m_name in all_mehsullar.keys():
+                m_row = data[sheet]['mehsul_rows'].get(m_name)
+                if m_row is not None:
+                    total_current += safe_float(raw_df.iloc[m_row + 1, ac])
+                    total_outflow += safe_float(raw_df.iloc[m_row + 3, ac])
+                    total_inflow  += safe_float(raw_df.iloc[m_row + 2, ac])
+                    total_to90    += safe_float(raw_df.iloc[m_row + 4, ac])
+            
+            # Faizləri hesabla
+            if prev_total_current > 0:
+                recovery_pct = round(total_outflow / prev_total_current * 100, 2)
+                inflow_pct = round(total_inflow / prev_total_current * 100, 2)
+                towards_npl_pct = round(total_to90 / prev_total_current * 100, 2)
+            else:
+                recovery_pct = inflow_pct = towards_npl_pct = 0.0
             
             result.append({
-                'ay': ay_data['ay'],
-                'portfolio': total_portfolio,
-                'recovery': total_recovery / count if count > 0 else 0,
-                'towards_npl': total_towards_npl / count if count > 0 else 0,
-                'inflow': total_inflow / count if count > 0 else 0,
+                'ay': ay_info['label'],
+                'portfolio': round(total_current / 1000, 2),
+                'recovery': recovery_pct,
+                'towards_npl': towards_npl_pct,
+                'inflow': inflow_pct,
             })
+            
+            prev_total_current = total_current
         
         return {
             'aylar':       [d['ay']          for d in result],
